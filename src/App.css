@@ -1,0 +1,96 @@
+.App {
+  min-width: 100%;
+  min-height: 100%;
+}
+.App>h1{
+  padding-left:2%;
+}
+
+.Sidebar {
+  max-width: 30%;
+  min-height: 100%;
+  border-right: white 1px solid;
+  box-sizing: border-box;
+  position:fixed;
+  left:0;
+  top:0;
+  padding:5%;
+  padding-top:2%;
+}
+
+.TaskItem{
+  text-align: center;
+  margin:auto;
+  width: 90%;
+  min-height:50px;
+  position:relative;
+  display:flex;
+  padding:0;
+  margin-bottom:5%;
+  box-sizing: content-box;
+  background:var(--lighter-background);
+  border-radius:15px;
+  overflow:hidden;
+  border:2px solid lightgrey;
+}
+.TaskItemCheckbox{
+  /* Remove default button styling */
+  border:none;
+  padding:0;
+  color:white;
+  margin:0;
+  width:50%;
+  min-height:100%;
+  max-width:100px;
+  background:none;
+  transition: .2s ease;
+}
+.TaskItemCheckbox:hover{
+  cursor:pointer;
+  background:darkgrey;
+}
+.TaskItemInput{
+  /* Remove default input styling */
+  border:none;
+  padding:0;
+  margin:0;
+  color:white;
+  width:100%;
+  min-height:100%;
+  background:none;
+  transition: .2s ease;
+  padding-left:15px;
+}
+.TaskItemInput:hover{
+  cursor:pointer;
+  background:grey;
+
+}
+.TaskItemInput:focus{
+  border-bottom:var(--accent) 1px solid;
+    outline:none;
+}
+
+
+.AddTaskItemButton{
+  width:90%;
+  text-align: center;
+  margin:auto;
+  min-height:50px;
+  background: var(--lighter-background);
+  text-align: center;
+  position:relative;
+  cursor: pointer;
+  border-radius:15px;
+  overflow:hidden;
+  transition: .2s ease;
+}
+.AddTaskItemButton:hover{
+  background:grey;
+}
+.AddTaskItemButtonIcon{
+  transform: translate(-50%,-50%);
+  position:absolute;
+  top:50%;
+  left:50%;
+}
