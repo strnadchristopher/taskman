@@ -4,120 +4,151 @@ import TaskItem from './components/TaskItem';
 import { useEffect, useState } from 'react';
 
 function App() {
-  const [taskItemIds, setTaskItemIds] = useState([]);
   const [taskList, setTaskList] = useState([]);
-  const [completedTaskItemIds, setCompletedTaskItemIds] = useState([]);
-  const [completedTaskList, setCompletedTaskList] = useState([]);
-
   useEffect(() => {
-    // Read task item IDs from local storage
-    const foundTaskItemIds = localStorage.getItem("taskItemIds");
-
-    if (foundTaskItemIds) {
-      const ids = foundTaskItemIds.split(";").filter(Boolean); // Remove empty strings
-      setTaskItemIds(ids);
-
-      // Initialize the taskList based on the retrieved IDs
-      const foundTaskListItems = ids.map((itemId) => ({
-        id: itemId,
-        description: localStorage.getItem(itemId) || "", // Handle missing descriptions
-      }));
-      setTaskList(foundTaskListItems);
-    }
-
-    // Read completed task item IDs from local storage
-    const foundCompletedTaskItemIds = localStorage.getItem("completedTaskItemIds");
-
-    if (foundCompletedTaskItemIds) {
-      const ids = foundCompletedTaskItemIds.split(";").filter(Boolean); // Remove empty strings
-      setCompletedTaskItemIds(ids);
-
-      // Initialize the taskList based on the retrieved IDs
-      const foundCompletedTaskListItems = ids.map((itemId) => ({
-        id: itemId,
-        description: localStorage.getItem(itemId) || "", // Handle missing descriptions
-      }));
-      setCompletedTaskList(foundCompletedTaskListItems);
-    }
+    LoadTaskDB();
   }, []);
-
-  const CreateNewTask = () => {
-    // Create a 15 char random string of letters and numbers
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let NewTaskId = '';
-    for (let i = 0; i < 15; i++) {
-      NewTaskId += characters.charAt(Math.floor(Math.random() * charactersLength));
+  const LoadTaskDB = () => {
+    let taskDB = localStorage.getItem("taskDB");
+    setTaskList((JSON.parse(taskDB) || []).filter((taskItem) => {
+      return taskItem.description !== "";
+    }) || []);
+    if (!taskDB) {
+      localStorage.setItem("taskDB", JSON.stringify([]))
     }
-    let NewTask = { "id": NewTaskId, "description": "" };
+  }
+  useEffect(() => {
+    SaveTaskDB();
+  }, [taskList])
+  const SaveTaskDB = () => {
+    localStorage.setItem("taskDB", JSON.stringify(taskList))
+  }
+  const CreateNewTask = () => {
+    let NewUUID = (() => ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, a => (a ^ Math.random() * 16 >> a / 4).toString(16)))();
+    let NewTask = {
+      id: NewUUID,
+      description: "",
+      complete: false,
+      pinned: false,
+      dateCreated: new Date().getTime(),
+      dateCompleted: null,
+      priority: 0,
+    }
+    let NewTaskList = [...taskList, NewTask];
+    setTaskList(NewTaskList);
+  }
 
-    // Update taskItemIds and taskList
-    const newTaskItemIds = [...taskItemIds, NewTaskId];
-    setTaskItemIds(newTaskItemIds);
-
-    // Update the local storage with the new task item IDs
-    const stringifiedItemIds = newTaskItemIds.join(";");
-    localStorage.setItem("taskItemIds", stringifiedItemIds);
-
-    const newTaskList = [...taskList, NewTask];
-    setTaskList(newTaskList);
+  const DeleteTask = (taskId) => {
+    let NewTaskList = [...taskList];
+    let TaskIndex = NewTaskList.findIndex((taskItem) => taskItem.id === taskId);
+    NewTaskList.splice(TaskIndex, 1);
+    setTaskList(NewTaskList);
   }
 
   const ClearTasks = () => {
-    // Clear taskItemIds and taskList, and remove the data from local storage
-    setTaskItemIds([]);
     setTaskList([]);
-    localStorage.removeItem("taskItemIds");
-
-    // Clear completedTaskItemIds and completedTaskList, and remove the data from local storage
-    setCompletedTaskItemIds([]);
-    setCompletedTaskList([]);
-    localStorage.removeItem("completedTaskItemIds");
   }
 
   const UpdateTask = (taskId, taskDescription) => {
-    localStorage.setItem(taskId, taskDescription);
-    console.log("Updated task " + taskId + " to read " + taskDescription)
+    let NewTaskList = [...taskList];
+    let TaskIndex = NewTaskList.findIndex((taskItem) => taskItem.id === taskId);
+    NewTaskList[TaskIndex].description = taskDescription;
+    setTaskList(NewTaskList);
   }
 
-  const MarkTaskAsComplete = (taskId) =>{
-    console.log("Marking task " + taskId + " as complete")
-    localStorage.removeItem(taskId);
+  const MarkTaskAsComplete = (taskId) => {
+    let NewTaskList = [...taskList];
+    let TaskIndex = NewTaskList.findIndex((taskItem) => taskItem.id === taskId);
+    NewTaskList[TaskIndex].complete = !NewTaskList[TaskIndex].complete;
+    setTaskList(NewTaskList);
+  }
 
-    // Update taskItemIds and taskList
-    const newTaskItemIds = taskItemIds.filter((id) => id !== taskId);
-    setTaskItemIds(newTaskItemIds);
+  const MarkTaskAsPinned = (taskId) => {
+    let NewTaskList = [...taskList];
+    let TaskIndex = NewTaskList.findIndex((taskItem) => taskItem.id === taskId);
+    NewTaskList[TaskIndex].pinned = !NewTaskList[TaskIndex].pinned;
+    setTaskList(NewTaskList);
+  }
 
-    // Update the local storage with the new task item IDs
-    const stringifiedItemIds = newTaskItemIds.join(";");
-    localStorage.setItem("taskItemIds", stringifiedItemIds);
-
-    const newTaskList = taskList.filter((task) => task.id !== taskId);
-    setTaskList(newTaskList);
-
-    // Update completedTaskItemIds and completedTaskList
-    const newCompletedTaskItemIds = [...completedTaskItemIds, taskId];
-    setCompletedTaskItemIds(newCompletedTaskItemIds);
-
-    // Update the local storage with the new task item IDs
-    const stringifiedCompletedItemIds = newCompletedTaskItemIds.join(";");
-    localStorage.setItem("completedTaskItemIds", stringifiedCompletedItemIds);
-
-    const newCompletedTaskList = [...completedTaskList, taskId];
-    setCompletedTaskList(newCompletedTaskList);
+  const SetTaskPriority = (taskId, priority) => {
+    let NewTaskList = [...taskList];
+    let TaskIndex = NewTaskList.findIndex((taskItem) => taskItem.id === taskId);
+    NewTaskList[TaskIndex].priority = priority;
+    setTaskList(NewTaskList);
   }
 
   return (
     <div className="App">
-      <h1>Task Man</h1>
-      {taskList.map((taskItem) => (
-        <TaskItem MarkTaskAsComplete={MarkTaskAsComplete} UpdateTask={UpdateTask} key={taskItem.id} id={taskItem.id} description={taskItem.description} />
-      ))}
+      <h1>Task Man by Christopher</h1>
+      <h2>Today's Tasks</h2>
+      {taskList.filter((taskItem) => { return !taskItem.complete })
+        .sort((a, b) => {
+          // Sort by pinned, with pinned tasks first
+          if (a.pinned && !b.pinned) {
+            return -1;
+          } else if (!a.pinned && b.pinned) {
+            return 1;
+          }
+          // Sort by priority, with higher priority tasks first
+          if (a.priority > b.priority) {
+            return -1;
+          } else if (a.priority < b.priority) {
+            return 1;
+          }
+          // Sort by dateCreated, with earlier tasks first
+          if (a.dateCreated < b.dateCreated) {
+            return -1;
+          } else if (a.dateCreated > b.dateCreated) {
+            return 1;
+          }
+          return 0;
+        })
+        .map((taskItem) => (
+          <TaskItem
+            DeleteTask={DeleteTask}
+            CreateNewTask={CreateNewTask}
+            MarkTaskAsComplete={MarkTaskAsComplete}
+            UpdateTask={UpdateTask}
+            SetTaskPriority={SetTaskPriority}
+            MarkTaskAsPinned={MarkTaskAsPinned}
+            key={taskItem.id}
+            id={taskItem.id}
+            description={taskItem.description}
+            complete={taskItem.complete}
+            pinned={taskItem.pinned}
+            priority={taskItem.priority}
+            dateCreated={taskItem.dateCreated}
+          />
+        ))}
       <AddTaskItemButton ClearTasks={ClearTasks} CreateNewTask={CreateNewTask} />
-      <h1>Completed Tasks</h1>
-      {completedTaskList.map((taskItem) => (
-        <TaskItem TaskComplete={true} MarkTaskAsComplete={MarkTaskAsComplete} UpdateTask={UpdateTask} key={taskItem.id} id={taskItem.id} description={taskItem.description} />
-      ))}
+      <h2>Completed Tasks</h2>
+      {taskList.filter((taskItem) => { return taskItem.complete })
+        .sort((a, b) => {
+          // Sort by date completed, with earlier tasks first
+          if (a.dateCompleted < b.dateCompleted) {
+            return -1;
+          } else if (a.dateCompleted > b.dateCompleted) {
+            return 1;
+          }
+          return 0;
+        })
+        .map((taskItem) => (
+          <TaskItem
+            DeleteTask={DeleteTask}
+            CreateNewTask={CreateNewTask}
+            MarkTaskAsComplete={MarkTaskAsComplete}
+            UpdateTask={UpdateTask}
+            SetTaskPriority={SetTaskPriority}
+            MarkTaskAsPinned={MarkTaskAsPinned}
+            key={taskItem.id}
+            id={taskItem.id}
+            description={taskItem.description}
+            complete={taskItem.complete}
+            pinned={taskItem.pinned}
+            priority={taskItem.priority}
+            dateCreated={taskItem.dateCreated}
+          />
+        ))}
     </div>
   );
 }
