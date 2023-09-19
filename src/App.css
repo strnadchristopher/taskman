@@ -84,7 +84,7 @@
   padding: 0;
   color: white;
   margin: 0;
-  width: 50%;
+  width: 10%;
   min-height: 100%;
   max-width: 100px;
   background: none;
@@ -124,7 +124,7 @@
   padding: 0;
   color: white;
   margin: 0;
-  width: 50%;
+  width: 10%;
   min-height: 100%;
   max-width: 100px;
   background: none;
@@ -142,7 +142,7 @@
   padding: 0;
   color: white;
   margin: 0;
-  width: 50%;
+  width: 10%;
   min-height: 100%;
   max-width: 100px;
   background: none;
@@ -161,11 +161,12 @@
   padding: 0;
   margin: 0;
   color: white;
-  width: 50%;
+  width: 10%;
   min-height: 100%;
   max-width: 100px;
   background: none;
   transition: .2s ease;
+  text-align: center;
 }
 
 .TaskItemPriority:hover {
